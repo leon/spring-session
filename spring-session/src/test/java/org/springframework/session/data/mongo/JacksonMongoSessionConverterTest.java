@@ -18,6 +18,12 @@ package org.springframework.session.data.mongo;
 import com.mongodb.DBObject;
 import org.junit.Test;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.web.PortResolver;
+import org.springframework.security.web.savedrequest.DefaultSavedRequest;
+import org.springframework.security.web.savedrequest.SavedRequest;
+
+import javax.servlet.ServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -80,5 +86,55 @@ public class JacksonMongoSessionConverterTest {
 
 		//then
 		assertThat(cart.getQueryObject().get("attrs.cart")).isEqualTo("my-cart");
+	}
+
+	@Test
+	public void shouldSerializeSavedRequest() throws Exception {
+		//given
+		MongoExpiringSession session = new MongoExpiringSession();
+
+		final String SAVED_REQUEST = "SPRING_SECURITY_SAVED_REQUEST";
+
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/test");
+		PortResolver portResolver = new PortResolver() {
+			public int getServerPort(ServletRequest request) {
+				return 8080;
+			}
+		};
+
+		DefaultSavedRequest savedRequest = new DefaultSavedRequest(request, portResolver);
+
+		//when
+		session.setAttribute(SAVED_REQUEST, savedRequest);
+		DBObject json = this.sut.convert(session);
+
+		//then
+		assertThat(json.get("attrs")).isNotNull();
+	}
+
+	@Test
+	public void shouldDeserializeSavedRequest() throws Exception {
+		//given
+		MongoExpiringSession session = new MongoExpiringSession();
+
+		final String SAVED_REQUEST = "SPRING_SECURITY_SAVED_REQUEST";
+
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/test");
+		PortResolver portResolver = new PortResolver() {
+			public int getServerPort(ServletRequest request) {
+				return 8080;
+			}
+		};
+
+		DefaultSavedRequest savedRequest = new DefaultSavedRequest(request, portResolver);
+
+		//when
+		session.setAttribute(SAVED_REQUEST, savedRequest);
+		DBObject json = this.sut.convert(session);
+		MongoExpiringSession deserializedSession = this.sut.convert(json);
+
+		//then
+		assertThat(deserializedSession).isNotNull();
+		assertThat(deserializedSession.getAttribute(SAVED_REQUEST)).isInstanceOf(SavedRequest.class);
 	}
 }
