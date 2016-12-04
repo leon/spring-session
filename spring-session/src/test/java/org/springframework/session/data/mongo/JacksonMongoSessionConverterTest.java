@@ -17,7 +17,6 @@ package org.springframework.session.data.mongo;
 
 import com.mongodb.DBObject;
 import org.junit.Test;
-
 import org.springframework.data.mongodb.core.query.Query;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +39,38 @@ public class JacksonMongoSessionConverterTest {
 		//then
 		assertThat(convert.get("_id")).isEqualTo(session.getId());
 		assertThat(convert.get("id")).isNull();
+	}
+
+	@Test
+	public void shouldSerializeAllBasicFields() throws Exception {
+		//given
+		MongoExpiringSession session = new MongoExpiringSession();
+
+		//when
+		DBObject convert = this.sut.convert(session);
+
+		//then
+		assertThat(convert.get("created")).isEqualTo(session.getCreationTime());
+		assertThat(convert.get("accessed")).isEqualTo(session.getLastAccessedTime());
+		assertThat(convert.get("interval")).isEqualTo(session.getMaxInactiveIntervalInSeconds());
+		assertThat(convert.get("expireAt")).isEqualTo(session.getExpireAt());
+	}
+
+	@Test
+	public void shouldDeserializeAllBasicFields() throws Exception {
+		//given
+		MongoExpiringSession session = new MongoExpiringSession();
+
+		//when
+		DBObject json = this.sut.convert(session);
+
+		MongoExpiringSession deserializedSession = this.sut.convert(json);
+
+		//then
+		assertThat(deserializedSession.getCreationTime()).isEqualTo(session.getCreationTime());
+		assertThat(deserializedSession.getLastAccessedTime()).isEqualTo(session.getLastAccessedTime());
+		assertThat(deserializedSession.getMaxInactiveIntervalInSeconds()).isEqualTo(session.getMaxInactiveIntervalInSeconds());
+		assertThat(deserializedSession.getExpireAt()).isEqualTo(session.getExpireAt());
 	}
 
 	@Test

@@ -42,7 +42,8 @@ public class MongoExpiringSession implements ExpiringSession {
 	private long created = System.currentTimeMillis();
 	private long accessed;
 	private int interval;
-	private Date expireAt;
+	private long expireAt;
+
 	private Map<String, Object> attrs = new HashMap<String, Object>();
 
 	public MongoExpiringSession() {
@@ -99,8 +100,7 @@ public class MongoExpiringSession implements ExpiringSession {
 
 	public void setLastAccessedTime(long lastAccessedTime) {
 		this.accessed = lastAccessedTime;
-		this.expireAt = new Date(
-				lastAccessedTime + TimeUnit.SECONDS.toMillis(this.interval));
+		this.expireAt = lastAccessedTime + TimeUnit.SECONDS.toMillis(this.interval);
 	}
 
 	public long getLastAccessedTime() {
@@ -116,14 +116,14 @@ public class MongoExpiringSession implements ExpiringSession {
 	}
 
 	public boolean isExpired() {
-		return new Date().after(this.expireAt);
+		return System.currentTimeMillis() > expireAt;
 	}
 
-	public Date getExpireAt() {
+	public long getExpireAt() {
 		return this.expireAt;
 	}
 
-	public void setExpireAt(Date expireAt) {
+	public void setExpireAt(long expireAt) {
 		this.expireAt = expireAt;
 	}
 

@@ -92,7 +92,7 @@ public class JdkMongoSessionConverter extends AbstractMongoSessionConverter {
 				(Integer) sessionWrapper.get(MAX_INTERVAL));
 		session.setCreationTime((Long) sessionWrapper.get(CREATION_TIME));
 		session.setLastAccessedTime((Long) sessionWrapper.get(LAST_ACCESSED_TIME));
-		session.setExpireAt((Date) sessionWrapper.get(EXPIRE_AT_FIELD_NAME));
+		session.setExpireAt((Long) sessionWrapper.get(EXPIRE_AT_FIELD_NAME));
 		deserializeAttributes(sessionWrapper, session);
 		return session;
 	}
